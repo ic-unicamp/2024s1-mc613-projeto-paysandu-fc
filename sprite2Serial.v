@@ -15,23 +15,26 @@ module sprite2Serial (
     reg [7:0] data_aux;
     reg [9:0] x_out_aux;
     reg [9:0] y_out_aux;
-    reg [5:0] counter_aux = 5'd0;
-
+    reg [9:0] counter_aux = 9'd0;
+	 integer i;
+	
 	always @(posedge clock) begin
-        if (!reset || !read_enable) begin
+        if (!reset) begin
             x_out_aux = x;
             y_out_aux = y;
-            counter_aux = 5'd0;
+            counter_aux = 10'd0;
+			data_aux = 8'd0;
             
         end else begin
-            if (sprite[x_out_aux + y_out_aux*16] == 1) data_aux  = color;
+		  
+            if (sprite[counter_aux] == 1 && read_enable) data_aux  = color;
             else data_aux  = 0;
-
-            counter_aux = counter_aux + 5'd1;
-            x_out_aux = x + counter_aux % 5'd16;
-            y_out_aux = y + counter_aux / 5'd16;
+			
+            counter_aux = counter_aux + 10'd1;
+            x_out_aux = x + counter_aux % 10'd16;
+            y_out_aux = y + counter_aux / 10'd16;
             
-            if (counter_aux >= 256) counter_aux = 5'd0;
+            if (counter_aux >= 256) counter_aux = 10'd0;
         end
     end
 

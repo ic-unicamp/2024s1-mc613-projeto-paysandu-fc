@@ -40,7 +40,7 @@ module vga(
     `define SCREEN_RANGE(pixel_count, line_count) ((pixel_count >= 144) && (pixel_count < 784) && (line_count >= 35) && (line_count < 515))
 
     assign next_x = (`SCREEN_RANGE(pixel_count, line_count)) ? pixel_count - 10'd144 : 10'd0; //143
-    assign next_y = (`SCREEN_RANGE(pixel_count, line_count)) ? line_count - 10'd35 : 10'd0;
+    assign next_y = (`SCREEN_RANGE(pixel_count, line_count)) ? ine_count - 10'd35 : 10'd0;
 
     assign VGA_R = (`SCREEN_RANGE(pixel_count, line_count)) ? red_in : 8'd0;
     assign VGA_G = (`SCREEN_RANGE(pixel_count, line_count)) ? green_in : 8'd0;
@@ -48,6 +48,6 @@ module vga(
 
     assign VGA_HS = (pixel_count < 96) ? 1'b0 : 1'b1; 
 	assign VGA_VS = (line_count < 2) ? 1'b0 : 1'b1;
-    assign VGA_SYNC_N = 1'b1;
+    assign VGA_SYNC_N = 1'b0;
     assign VGA_BLANK_N = 1'b1;
 endmodule

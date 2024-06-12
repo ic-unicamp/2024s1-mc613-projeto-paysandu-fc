@@ -58,7 +58,7 @@ module enemy (
     assign enemy_x = enemy_x_aux;
     assign enemy_y = enemy_y_aux;
     assign enemy_size = 10'd16;
-    assign enemy_sprite = 256'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    assign enemy_sprite = 256'd255;
     assign enemy_color = 8'd127;
     assign enemy_write_enable = 1'b1;
 

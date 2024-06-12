@@ -1,16 +1,10 @@
-module player (
+module player(
     input CLOCK_50, reset, game_state,
     input keyUp, keyDown, keyLeft, keyRight,  // keys para movimentação
-
-    output wire [9:0] player_x,
-    output wire [9:0] player_y,
-    output wire [9:0] player_size,
-    output wire [255:0] player_sprite,
-    output wire [7:0] player_color,
-    output wire player_write_enable
+    output [9:0] out_x, out_y,
+    output [9:0] carac_bottomLimit, carac_leftLimit, carac_rightLimit, carac_topLimit// posição de character
 );
-
-   // Variaveis logicas do teclado
+   // Variaveis logicas da caracra
         reg [31:0] keyLeft_counter = 0, keyRight_counter = 0, keyConst = 4000000;
         reg [9:0] out_x_aux, out_y_aux;
         reg [31:0] keyDown_counter = 0, keyTop_counter = 0;
@@ -19,6 +13,10 @@ module player (
         if (!reset || game_state) begin
             out_x_aux = 328;
             out_y_aux = 232;
+            carac_topLimit_out = 328;
+            carac_bottomLimit_out = 312;
+			carac_leftLimit_out = 232;
+			carac_rightLimit_out = 248;
             
         end else begin
         // Logica de movimentação do character
