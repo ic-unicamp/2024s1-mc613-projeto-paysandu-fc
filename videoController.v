@@ -9,7 +9,7 @@ module videoController(
 
     output wire VGA_HS, VGA_VS,
     output wire [7:0] VGA_R, VGA_G, VGA_B,
-    output wire VGA_SYNC_N, VGA_BLANK_N, VGA_CLK,
+    output wire VGA_SYNC_N, VGA_BLANK_N, VGA_CLK
 );
 
 
