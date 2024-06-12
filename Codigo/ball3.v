@@ -1,0 +1,120 @@
+module ball3(
+    input CLOCK_50, reset,
+    input [3:0] game_state,
+    output [9:0] ball_bottomLimit, ball_leftLimit, ball_rightLimit, ball_topLimit,
+    input [9:0] bar_bottomLimit, bar_leftLimit, bar_rightLimit, bar_topLimit,
+    output [9:0] ball_x_speed, ball_y_speed,
+    output [0:0] ball_x_dir, ball_y_dir,
+    output [3:0] game_over_flag
+);
+    // Variaveis logicas da bola
+    reg [9:0] ball_topLimit_aux = 290;
+    reg [9:0] ball_bottomLimit_aux = 305;
+    reg [9:0] ball_leftLimit_aux = 240;
+    reg [9:0] ball_rightLimit_aux = 255;
+    reg [9:0] futureTopLimit, futureBottomLimit, futureLeftLimit, futureRightLimit;
+
+    reg [9:0] ball_x_speed_aux = 4;
+    reg [9:0] ball_y_speed_aux = 4;
+    reg [0:0] ball_x_dir_aux = 1; // numero 1 indica que a bola se move para a direita, 0 para a esquerda
+    reg [0:0] ball_y_dir_aux = 1; // numero 1 indica que a bola se move para baixo, 0 para cima
+
+    /*  Explicações sobre a movimentação da bola:
+        A constante de tempo (ball_time_const) padrao sera 1000, 
+        que significa que a cada 1 / 1000 segundos 
+        a barra se movera "speed" pixeis 
+        
+        Movement flag indica quando a sprite bola deve se mover
+
+        A forma como velocidade foi definida nao eh talvez
+        a mais intuitiva, porque estamos movimentando a mesma
+        quantidade de pixeis, mas em periodos de tempo cada
+        vez menores, o que faz com que a bola se mova mais rapido.
+
+        Uma forma mais entuitiva seria a velocidade estar
+        atrelada a quantidade de pixes que a bola se movimenta
+        a cada ciclo de tempo bem definido(por exemplo a cada 0,05 segundos)
+
+        A forma atual foi escolhida para que seja mais facil fazer a logica
+        de colisao com a barra e paredes.                                       */
+    wire movement_flag;
+    reg [31:0] ball_time_const = 32'd1000;
+    ball_mov_counter ball_mov_counter_module(CLOCK_50, reset, ball_time_const, movement_flag);
+
+    // Variaveis de colisao
+    reg [9:0] colision_position = 10'd0;
+    reg game_over_flag_aux = 0;
+
+    always @(posedge CLOCK_50) begin
+        if (!reset || game_state) begin
+            ball_topLimit_aux = 10;
+            ball_bottomLimit_aux = 25;
+            ball_leftLimit_aux = 240;
+            ball_rightLimit_aux = 255;
+            ball_x_speed_aux = 2;
+            ball_y_speed_aux = 1;
+            ball_x_dir_aux = 1;
+            ball_y_dir_aux = 1;
+
+            game_over_flag_aux = 0;
+            ball_time_const = 32'd1000;
+        end else begin
+            // Logica de movimentação da bola
+            if (movement_flag) begin
+                // Calculo dos limites futuros
+                futureBottomLimit = ball_bottomLimit_aux + (ball_y_speed_aux*ball_y_dir_aux) - ((10'd1 - ball_y_dir_aux) * ball_y_speed_aux);
+                futureTopLimit = ball_topLimit_aux + (ball_y_speed_aux*ball_y_dir_aux) - ((10'd1 - ball_y_dir_aux) * ball_y_speed_aux);
+                futureLeftLimit = ball_leftLimit_aux + (ball_x_speed_aux*ball_x_dir_aux) - ((10'd1 - ball_x_dir_aux) * ball_x_speed_aux);
+                futureRightLimit = ball_rightLimit_aux + (ball_x_speed_aux*ball_x_dir_aux) - ((10'd1 - ball_x_dir_aux) * ball_x_speed_aux);
+            
+                // Checkagem de overflow causado pelas operações acima
+                if (futureTopLimit > 10'd900) begin
+                    futureTopLimit = 10'd0;
+                    futureBottomLimit = 10'd15;
+                end if (futureLeftLimit > 10'd900) begin
+                    futureLeftLimit = 10'd0;
+                    futureRightLimit = 10'd15;
+                end if (futureRightLimit > 10'd639) begin
+                    futureRightLimit = 10'd639;
+                    futureLeftLimit = 10'd624;
+                end if (futureBottomLimit > 10'd479) begin 
+                    futureBottomLimit = 10'd479;
+                    futureTopLimit = 10'd464;
+                end
+
+                // Colisão com paredes
+                if (futureLeftLimit <= 10'd0 || futureRightLimit >= 10'd639) begin
+                    ball_x_dir_aux = ~ball_x_dir_aux;
+                end if (futureTopLimit <= 10'd0 ||futureBottomLimit >= 10'd479) begin
+                    ball_y_dir_aux = ~ball_y_dir_aux;
+                end
+
+                // Logica de colisao da bola com a barra
+                `define IN_RANGE1(futureLeftLimit, futureRightLimit) ((futureLeftLimit >= bar_leftLimit) && (futureLeftLimit < bar_rightLimit) || (futureRightLimit >= bar_leftLimit) && (futureRightLimit < bar_rightLimit))
+                `define IN_RANGE2(futureTopLimit, futureBottomLimit) ((futureTopLimit >= bar_topLimit) && (futureTopLimit < bar_bottomLimit) || (futureBottomLimit >= bar_bottomLimit) && (futureBottomLimit < bar_bottomLimit))
+                if (`IN_RANGE1(futureLeftLimit, futureRightLimit) && `IN_RANGE2(futureTopLimit, futureBottomLimit)) begin
+                    game_over_flag_aux = 1;
+                end
+
+                // Atualização dos limites
+                ball_topLimit_aux = futureTopLimit;
+                ball_bottomLimit_aux = futureBottomLimit;
+                ball_leftLimit_aux = futureLeftLimit;
+                ball_rightLimit_aux = futureRightLimit; 
+            end
+        end
+    end
+
+    assign ball_bottomLimit = ball_bottomLimit_aux;
+    assign ball_leftLimit = ball_leftLimit_aux;
+    assign ball_rightLimit = ball_rightLimit_aux;
+    assign ball_topLimit = ball_topLimit_aux;
+
+    assign ball_x_speed = ball_x_speed_aux;
+    assign ball_y_speed = ball_y_speed_aux;
+    assign ball_x_dir = ball_x_dir_aux;
+    assign ball_y_dir = ball_y_dir_aux;
+
+    assign game_over_flag = game_over_flag_aux;
+
+endmodule

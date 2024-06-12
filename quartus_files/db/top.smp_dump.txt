@@ -1,0 +1,5 @@
+
+State Machine - |top|game_controller:game_controller_module|game_state_aux
+Name game_state_aux.0001 
+game_state_aux.0000 0 
+game_state_aux.0001 1 

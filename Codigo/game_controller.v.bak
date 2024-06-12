@@ -1,0 +1,54 @@
+module game_controller (
+    input CLOCK_50, reset,
+    input keyLeft, keyRight, keyUp, keyDown, keyRestart, // keys para movimentação
+    output [3:0] game_state,
+    output [9:0] bar_bottomLimit, bar_leftLimit, bar_rightLimit, bar_topLimit,
+    output [9:0] ball_bottomLimit, ball_leftLimit, ball_rightLimit, ball_topLimit,
+    output [9:0] ball_x_speed, ball_y_speed,
+    output [0:0] ball_x_dir, ball_y_dir,
+    output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5
+);
+    // Variaveis auxiliares do jogo
+        reg [3:0] game_state_aux = 4'd0;
+        wire [0:0] gameover_flag;
+
+    // Placar jogo
+        wire [17:0] highScore, currentScore;
+        display display_module(highScore, currentScore,
+                                HEX0, HEX1, HEX2, HEX3, HEX4, HEX5);
+
+    //----BARRA----
+        bar bar_module(CLOCK_50, reset, game_state, keyLeft, keyRight, bar_bottomLimit, bar_leftLimit, bar_rightLimit, bar_topLimit);
+
+    //----BOLA----
+        ball ball_module(CLOCK_50, reset, game_state,
+                ball_bottomLimit, ball_leftLimit, ball_rightLimit, ball_topLimit,
+                bar_bottomLimit, bar_leftLimit, bar_rightLimit, bar_topLimit,
+                ball_x_speed, ball_y_speed, ball_x_dir, ball_y_dir, gameover_flag, highScore, currentScore);
+
+    always @(posedge CLOCK_50) begin
+        if (!reset) begin
+            game_state_aux = 4'd0;
+
+        end else begin
+            case(game_state_aux)
+                0: begin // estado de jogo
+                    if (gameover_flag) begin
+                        game_state_aux = 4'd1;
+                    end
+                end
+
+                1: begin // game over
+                    if (!keyRestart) begin
+                        game_state_aux = 4'd0;
+                    end
+                end
+
+                default: game_state_aux = 4'd0;
+            endcase
+        end
+    end
+
+    assign game_state = game_state_aux;
+
+endmodule

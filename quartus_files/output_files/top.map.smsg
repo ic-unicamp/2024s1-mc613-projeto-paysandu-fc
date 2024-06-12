@@ -1,0 +1,1 @@
+Warning (10268): Verilog HDL information at ball_mov_counter.v(9): always construct contains both blocking and non-blocking assignments File: /home/ec2022/ra260577/MC613/VSCodeRepositorios/2024s1-mc613-projeto-paysandu-fc/new_version/ball_mov_counter.v Line: 9
